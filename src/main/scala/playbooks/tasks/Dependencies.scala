@@ -25,7 +25,7 @@ object Dependencies {
     Shell("echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections")
   )
 
-  val install = Task(
+  val installJava8 = Task(
     "Instal java8",
     Apt(name = Some("oracle-java8-installer"), state = Some(Apt.State.present)))
 
@@ -37,7 +37,7 @@ object Dependencies {
   val all = List(
     addRepo,
     debConf,
-    install,
+    installJava8,
     updateAlternatives
   )
 }

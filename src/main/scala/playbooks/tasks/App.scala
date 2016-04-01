@@ -3,6 +3,7 @@ package playbooks.tasks
 import ansible.Modules._
 import ansible.Options.{Sudo, Become}
 import ansible.Task
+import ansible.Task.Options
 import playbooks.Conf.appName
 
 object App {
@@ -12,7 +13,7 @@ object App {
 
   def asAppUser(t: Task): Task =
     t.copy(options = t.options.copy(
-      become = Some(Become(Some(appName), Some(Sudo)))))
+      become = Some(Become(appName, Sudo))))
 
   val downloadWar = Task("Download gitbucket war archive", GetUrl(
     url = warUrl,

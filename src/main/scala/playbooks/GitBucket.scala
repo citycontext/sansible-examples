@@ -9,7 +9,7 @@ object GitBucket extends App {
   val playbook = Playbook(
     hosts = List(HostPattern(Inventory.Groups.web.name)),
     tasks = Dependencies.all ++ App.all,
-    options = Playbook.Options(become = Some(Become(None, None)))
+    options = Playbook.Options(become = Some(Become()))
   )
 
   Runner.runPlaybook(Inventory.default)(playbook)
