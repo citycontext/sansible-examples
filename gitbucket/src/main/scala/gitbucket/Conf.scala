@@ -1,4 +1,4 @@
-package playbooks
+package gitbucket
 
 object Conf {
   val appName = "gitbucket"

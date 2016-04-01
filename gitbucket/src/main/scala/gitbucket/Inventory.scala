@@ -1,4 +1,4 @@
-package playbooks
+package gitbucket
 
 import ansible.Inventory._
 
@@ -11,5 +11,5 @@ object Inventory {
     val web = Group("web", List(Hosts.api1))
   }
 
-  val default = ansible.Inventory(List(Groups.web))
+  val hosts = ansible.Inventory(List(Groups.web))
 }

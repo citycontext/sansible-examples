@@ -1,24 +1,15 @@
-package playbooks.tasks
+package common.tasks
 
-import ansible.Modules.{Apt, AptRepository, Shell, User}
+import ansible.Modules.{Apt, AptRepository, Shell}
 import ansible.Task
-import playbooks.Conf.appName
 
-object Dependencies {
-   val appUser = Task(s"create user $appName",
-    User(appName, state = Some(User.State.present))
-  )
-
-  val installGit = Task(
-    "install git",
-    Apt(name = Some("git"), state = Some(Apt.State.present)))
-
+object Java8 {
   val addRepo = Task(
     "add Java8 repo",
     AptRepository(
       repo = "ppa:webupd8team/java",
       update_cache = Some(true))
-    )
+  )
 
   val debConf = Task(
     "accept Java8 license agreement",
@@ -34,7 +25,7 @@ object Dependencies {
     Shell("update-java-alternatives -s java-8-oracle")
   )
 
-  val all = List(
+  val all =  List(
     addRepo,
     debConf,
     installJava8,

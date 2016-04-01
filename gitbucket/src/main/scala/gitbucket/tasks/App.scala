@@ -1,10 +1,9 @@
-package playbooks.tasks
+package gitbucket.tasks
 
 import ansible.Modules._
 import ansible.Options.{Sudo, Become}
 import ansible.Task
-import ansible.Task.Options
-import playbooks.Conf.appName
+import gitbucket.Conf.appName
 
 object App {
   val warUrl = "https://github.com/gitbucket/gitbucket/releases/download/3.12/gitbucket.war"
@@ -41,7 +40,7 @@ object App {
   ))
 
   val startApp = Task("start app", Service(
-    appName, state = Some(Service.State.started)
+    appName, state = Some(Service.State.started), enabled = Some(true)
   ))
 
   val all = List(

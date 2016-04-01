@@ -1,12 +1,11 @@
-package playbooks.tasks
+package common.tasks
 
-import ansible.Modules.{Copy, File, Apt, GetUrl}
+import ansible.Modules.{Apt, Copy, File, GetUrl}
 import ansible.Task
-import playbooks.Conf.appName
 
-object SBT {
+class SBT(userName: String, userHome: String) {
   val version = "0.13.11"
-  val sbtPluginDir = s"/home/$appName/.sbt/0.13/plugins"
+  val sbtPluginDir = s"$userHome/.sbt/0.13/plugins"
   val dest = s"/tmp/sbt-$version.deb"
   val download = Task("Download sbt .deb package", GetUrl(
     url = s"https://dl.bintray.com/sbt/debian/sbt-$version.deb",
@@ -20,12 +19,12 @@ object SBT {
   val pluginDir = Task("create sbt plugin dir", File(
     path = sbtPluginDir,
     state = Some(File.State.directory),
-    owner = Some(appName)
+    owner = Some(userName)
   ))
 
   val assemblyPlugin = Task("add sbt-assembly plugin", Copy(
     dest = s"$sbtPluginDir/build.sbt",
-    owner = Some(appName),
+    owner = Some(userName),
     content = Some(
       """
         |addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.14.2")

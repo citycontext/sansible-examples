@@ -1,9 +1,9 @@
-package playbooks
+package gitbucket
 
 import ansible.Inventory.HostPattern
 import ansible.Options.Become
 import ansible.{Playbook, Runner}
-import playbooks.tasks._
+import gitbucket.tasks._
 
 object GitBucket extends App {
   val playbook = Playbook(
@@ -12,5 +12,5 @@ object GitBucket extends App {
     options = Playbook.Options(become = Some(Become()))
   )
 
-  Runner.runPlaybook(Inventory.default)(playbook)
+  Runner.runPlaybook(Inventory.hosts)(playbook)
 }
