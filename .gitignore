@@ -1,0 +1,6 @@
+target/
+dist/
+logs/
+web/logs
+elasticsearch/src/main/resources/application.conf
+.idea

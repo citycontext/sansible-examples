@@ -4,7 +4,7 @@ import ansible.Inventory._
 
 object Inventory {
   object Hosts {
-    val api1 = Hostname("sansible-web1", HostVars(Map("ansible_ssh_user" -> "root")))
+    val api1 = Hostname("sansible-web1", Map("ansible_ssh_user" -> "root"))
   }
 
   object Groups {
