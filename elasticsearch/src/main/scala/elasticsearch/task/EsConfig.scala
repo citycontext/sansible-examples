@@ -6,9 +6,7 @@ import elasticsearch.Templates
 import elasticsearch.Inventory.esGroupName
 
 class EsConfig(inventory: ansible.Inventory) {
-  private val privateIps =
-    inventory.group(esGroupName).map(_.hostnames.flatMap(_.hostVars.get("private_ip"))).
-      getOrElse(Nil)
+  private val privateIps = inventory.hostVarValues(esGroupName, "private_ip")
 
   val updateConfig = Task("update /etc/elasticsearch/elasticsearch.yml", Copy(
     dest = "/etc/elasticsearch/elasticsearch.yml",
