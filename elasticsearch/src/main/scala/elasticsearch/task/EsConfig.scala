@@ -3,11 +3,8 @@ package elasticsearch.task
 import ansible.Modules._
 import ansible.Task
 import elasticsearch.Templates
-import elasticsearch.Inventory.esGroupName
 
-class EsConfig(inventory: ansible.Inventory) {
-  private val privateIps = inventory.hostVarValues(esGroupName, "private_ip")
-
+class EsConfig(private val privateIps: Seq[String]) {
   val updateConfig = Task("update /etc/elasticsearch/elasticsearch.yml", Copy(
     dest = "/etc/elasticsearch/elasticsearch.yml",
     content = Some(Templates.etcElasticsearchYaml(privateIps))

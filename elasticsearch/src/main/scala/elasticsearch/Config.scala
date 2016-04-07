@@ -6,6 +6,7 @@ import com.myjeeva.digitalocean.impl.DigitalOceanClient
 
 object Config {
   private val c = ConfigFactory.load
+  val templateDir = "templates"
 
   object DigitaOcean {
     val token = c.getString("digitalocean.token")

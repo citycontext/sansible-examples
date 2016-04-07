@@ -7,7 +7,7 @@ lazy val commonSettings = Seq(
   version := "1.0-SNAPSHOT",
   organization := "com.citycontext",
   libraryDependencies ++= Seq(
-    "com.citycontext" %% "ansible" % "1.0-SNAPSHOT",
+    "com.citycontext" %% "sansible" % "0.1.1-SNAPSHOT",
     "com.typesafe" % "config" % "1.3.0"
   )
 )

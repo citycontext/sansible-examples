@@ -97,4 +97,24 @@ discovery.zen.ping.unicast.hosts: [${hostPrivateIps.map(ip => s""""$ip"""").mkSt
 #
 # action.destructive_requires_name: true
 """
+  object Tinc {
+    import elasticsearch.task.TincVPN.Host
+
+    def up(host: Host) =
+      s"""
+         |#!/bin/sh
+         |ifconfig $$INTERFACE ${host.subnet} netmask 255.255.255.0""".stripMargin
+
+    def conf(host: Host, connectTo: Option[Host]) =
+      s"""
+        |Name = ${host.name}
+        |AddressFamily = ipv4
+        |Interface = tun0
+        |${connectTo.fold("")(h => s"ConnectTo = ${h.name}")}""".stripMargin
+
+    def host(h: Host) =
+      s"""
+        |Address = ${h.name}
+        |Subnet = ${h.subnet}""".stripMargin
+  }
 }

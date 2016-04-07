@@ -15,12 +15,14 @@ object Inventory {
       droplets <- Future(apiClient.getAvailableDroplets(1, 500).getDroplets.asScala.toList)
       esInstances = droplets.filter(_.getName.contains(dropletPrefix))
     } yield {
-      val hosts = esInstances.map { d =>
+      val hosts = esInstances.zipWithIndex.map { case (d, i) =>
         (findIp4Address(d, "public"),
-         findIp4Address(d, "private"))
+         findIp4Address(d, "private"),
+         i)
 
-      }.collect { case (Some(publicIp), Some(privateIp)) =>
+      }.collect { case (Some(publicIp), Some(privateIp), i) =>
         Hostname(publicIp, Map(
+          "vpn_subnet" -> s"10.0.0.${i + 1}/32",
           "private_ip" -> privateIp,
           "ansible_ssh_user" -> "root"
         ))
@@ -34,5 +36,4 @@ object Inventory {
     val networks = d.getNetworks.getVersion4Networks.asScala
     networks.find(_.getType.toLowerCase() == networkType).map(_.getIpAddress)
   }
-
 }
