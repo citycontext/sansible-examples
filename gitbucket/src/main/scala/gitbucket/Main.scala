@@ -5,7 +5,7 @@ import ansible.Options.Become
 import ansible.{Playbook, Runner}
 import gitbucket.tasks._
 
-object GitBucket extends App {
+object Main extends App {
   val playbook = Playbook(
     hosts = List(HostPattern(Inventory.Groups.web.name)),
     tasks = Dependencies.all ++ App.all,
