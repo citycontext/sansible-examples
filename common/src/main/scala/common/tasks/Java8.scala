@@ -16,6 +16,10 @@ object Java8 {
     Shell("echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections")
   )
 
+  val aptUpdate = Task("run apt-get update", Apt(
+    update_cache = Some(true)
+  ))
+
   val installJava8 = Task(
     "Instal java8",
     Apt(name = Some("oracle-java8-installer"), state = Some(Apt.State.present)))
@@ -28,6 +32,7 @@ object Java8 {
   val all =  List(
     addRepo,
     debConf,
+    aptUpdate,
     installJava8,
     updateAlternatives
   )

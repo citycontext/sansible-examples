@@ -15,20 +15,28 @@ object Inventory {
       droplets <- Future(apiClient.getAvailableDroplets(1, 500).getDroplets.asScala.toList)
       esInstances = droplets.filter(_.getName.contains(dropletPrefix))
     } yield {
-      val hosts = esInstances.zipWithIndex.map { case (d, i) =>
+      val hosts = esInstances.map { case d =>
         (findIp4Address(d, "public"),
          findIp4Address(d, "private"),
-         i)
-
-      }.collect { case (Some(publicIp), Some(privateIp), i) =>
+         d.getName)
+      }.collect { case (Some(publicIp), Some(privateIp), nodeName) =>
         Hostname(publicIp, Map(
-          "vpn_subnet" -> s"10.0.0.${i + 1}/32",
+          "vpn_nodename" -> nodeName,
+          "vpn_subnet" -> subnetIp(nodeName),
           "private_ip" -> privateIp,
           "ansible_ssh_user" -> "root"
         ))
       }
 
       ansible.Inventory(List(Group(esGroupName, hosts.toList)))
+    }
+  }
+
+  private def subnetIp(hostname: String): String = {
+    val Pattern = s"""^$dropletPrefix([1-9]{1,3})""".r
+    hostname match {
+      case Pattern(n) => s"10.0.0.$n"
+      case _ => sys.error(s"Cannot produce a subnet ip for $hostname")
     }
   }
 

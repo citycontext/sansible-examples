@@ -1,8 +1,7 @@
 package elasticsearch.task
 
 
-import java.nio.file.{Files, Paths}
-
+import better.files.{File => F}
 import ansible.Modules._
 import ansible.Options.{Sudo, Become}
 import ansible.{Inventory, Task}
@@ -13,7 +12,7 @@ object TincVPN {
   case class Host(name: String,
                   publicIp: String,
                   privateIp: String,
-                  subnet: String)
+                  subnetIp: String)
 
   object Host {
     def fromHostname(h: Inventory.Hostname): Option[Host] =
@@ -34,18 +33,19 @@ class TincVPN(netName: String, masterHost: Host, vpnHosts: List[Host]) {
 
   private val etcPath = s"/etc/tinc/$netName"
   private val hostsPath = s"$etcPath/hosts"
-  private val localKeyPath = s"/tmp/ansible-tinc-keys/"
+  private def hostFile(h: Host) = s"$hostsPath/${h.name}"
+  private val localKeyPath = F("/tmp/ansible-tinc-keys/")
 
-  val install = Task("install tinc",
+  private val install = Task("install tinc",
     Apt(name = Some("tinc"), state = Some(Apt.State.present))
   )
 
-  val hostsDir = Task(s"create $hostsPath", File(
+  private val hostsDir = Task(s"create $hostsPath", File(
     path = hostsPath,
     state = Some(File.State.directory)
   ))
 
-  def tincConf(h: Host) = {
+  private def tincConf(h: Host) = {
     val connectTo =
       Some(masterHost).filterNot(_ => h == masterHost)
 
@@ -55,38 +55,31 @@ class TincVPN(netName: String, masterHost: Host, vpnHosts: List[Host]) {
     ))
   }
 
-  def hostConf(h: Host) = Task(s"Create $etcPath/${h.name}.conf", Copy(
-    dest = s"$hostsPath/${h.name}",
+  private def hostConf(h: Host) = Task(s"Create ${hostFile(h)}", Copy(
+    dest = hostFile(h),
     content = Some(TPL.host(h))
   ))
 
-  val genKeyPair = Task("Generate tinc key pair", Shell(
-    free_form = s"tincd -n $netName -K4096"
+  private val genKeyPair = Task("Generate tinc key pair", Shell(
+    free_form = s"tincd -n $netName -K",
+    creates = Some(s"$etcPath/rsa_key.priv")
   ), Task.Options(become = Some(Become("root", Sudo))))
 
-  def fetchKeyPair(host: Host) = {
-    val dirPath = Paths.get(localKeyPath)
-    if (!Files.isDirectory(dirPath)) Files.createDirectory(dirPath)
+  private def fetchKeyPair(h: Host) =
     Task("fetch tinc keys", Fetch(
-      src = s"$hostsPath/${host.name}",
+      src = hostFile(h),
       fail_on_missing = Some(true),
       flat = Some("yes"),
-      dest = localKeyPath
+      dest = (localKeyPath / h.name).toString
     ))
-  }
 
-  def uploadKeyPairs = vpnHosts.map(h => Task(s"distribute pub key for host: ${h.name}", Copy(
-    dest = s"$hostsDir/${h.name}",
-    src = Some(s"$localKeyPath/${h.name}"
-  ))))
-
-  def tincUp(host: Host) = Task(s"create $etcPath/tinc-up", Copy(
+  private def tincUp(host: Host) = Task(s"create $etcPath/tinc-up", Copy(
     dest = s"$etcPath/tinc-up",
     content = Some(TPL.up(host)),
     mode = Some("755")
   ))
 
-  def tincDown(host: Host) = Task(s"create $etcPath/tinc-down", Copy(
+  private def tincDown = Task(s"create $etcPath/tinc-down", Copy(
     dest = s"$etcPath/tinc-down",
     content = Some(
       """#!/bin/sh
@@ -95,14 +88,40 @@ class TincVPN(netName: String, masterHost: Host, vpnHosts: List[Host]) {
     mode = Some("755")
   ))
 
-  def forHost(h: Host): List[Task] = {
+  private val enableNetwork = Task(s"adding $netName to /etc/tinc/nets.boot", Lineinfile(
+    dest = "/etc/tinc/nets.boot",
+    line = Some(netName),
+    state = Some(Lineinfile.State.present)
+  ))
+
+  private val startService = Task("start tinc", Service(
+    name = "tinc",
+    state = Some(Service.State.started)
+  ))
+
+  def initLocalKeyDir(): Unit = {
+    if (localKeyPath.exists) localKeyPath.delete()
+    localKeyPath.createDirectory()
+  }
+
+  def configHost(h: Host): List[Task] = {
     List(
       install,
       hostsDir,
       tincConf(h),
       hostConf(h),
+      tincUp(h),
+      tincDown,
       genKeyPair,
       fetchKeyPair(h)
     )
   }
+
+  def distributeKeys = vpnHosts.map(h => Task(s"distribute pub key for host: ${h.name}", Copy(
+    dest = hostFile(h),
+    src = Some(s"$localKeyPath/${h.name}"
+  ))))
+
+  def start = List(enableNetwork, startService)
+
 }

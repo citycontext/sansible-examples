@@ -1,7 +1,10 @@
 package elasticsearch
 
+import Config.VPN.interfaceName
+
 object Templates {
-  def etcElasticsearchYaml(hostPrivateIps: Seq[String]): String = s"""
+  object Elasticsearch {
+      def etcYaml(hostPrivateIps: Seq[String]): String = s"""
 # ======================== Elasticsearch Configuration =========================
 #
 # NOTE: Elasticsearch comes with reasonable defaults for most settings.
@@ -55,7 +58,7 @@ bootstrap.mlockall: true
 #
 # Set the bind address to a specific IP (IPv4 or IPv6):
 #
-network.host: [_eth1_, _local_]
+network.host: [$interfaceName, _local_]
 #
 # Set a custom port for HTTP:
 #
@@ -97,24 +100,28 @@ discovery.zen.ping.unicast.hosts: [${hostPrivateIps.map(ip => s""""$ip"""").mkSt
 #
 # action.destructive_requires_name: true
 """
+  }
   object Tinc {
     import elasticsearch.task.TincVPN.Host
 
     def up(host: Host) =
       s"""
          |#!/bin/sh
-         |ifconfig $$INTERFACE ${host.subnet} netmask 255.255.255.0""".stripMargin
+         |ifconfig $$INTERFACE ${host.subnetIp} netmask 255.255.255.0
+         |""".stripMargin
 
     def conf(host: Host, connectTo: Option[Host]) =
       s"""
         |Name = ${host.name}
         |AddressFamily = ipv4
         |Interface = tun0
-        |${connectTo.fold("")(h => s"ConnectTo = ${h.name}")}""".stripMargin
+        |${connectTo.fold("")(h => s"ConnectTo = ${h.name}")}
+        |""".stripMargin
 
     def host(h: Host) =
       s"""
-        |Address = ${h.name}
-        |Subnet = ${h.subnet}""".stripMargin
+        |Address = ${h.privateIp}
+        |Subnet = ${h.subnetIp}/32
+        |""".stripMargin
   }
 }
