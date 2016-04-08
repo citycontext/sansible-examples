@@ -11,7 +11,7 @@ sub-projects:
 
 A minimalistic playbook showing how to provision a working instance of [Gitbucket](https://github.com/gitbucket/gitbucket): a fully featured, open source Github clone written in Scala.
 
-### [Elasticsearch Cluster](https://github.com/citycontext/sansible-examples/tree/master/gitbucket/src/main/scala/elasticsearch)
+### [Elasticsearch Cluster](https://github.com/citycontext/sansible-examples/tree/master/main/scala/elasticsearch)
 
 A slightly more complex playbook which sets up an Elastisearch cluster and configures it
 to run securely within a Tinc VPN. The project also illustrates how to generate an inventory
