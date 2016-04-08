@@ -7,12 +7,11 @@ Playbooks are implemented as separate sbt projects, with shared concerns (e.g. i
 Oracle jre-8) factored out into a `common` dependency. This build currently contains the following
 sub-projects:
 
-### Gitbucket web app
+### [Gitbucket](https://github.com/citycontext/sansible-examples/tree/master/gitbucket/src/main/scala/gitbucket)
 
-A minimalistic playbook showing how to provision a working instance of [Gitbucket](https://github.com/gitbucket/gitbucket): a fully
-featured, open source Github clone written in Scala.
+A minimalistic playbook showing how to provision a working instance of [Gitbucket](https://github.com/gitbucket/gitbucket): a fully featured, open source Github clone written in Scala.
 
-### Secure Elasticsearch Cluster
+### [Elasticsearch Cluster](https://github.com/citycontext/sansible-examples/tree/master/gitbucket/src/main/scala/elasticsearch)
 
 A slightly more complex playbook which sets up an Elastisearch cluster and configures it
 to run securely within a Tinc VPN. The project also illustrates how to generate an inventory
