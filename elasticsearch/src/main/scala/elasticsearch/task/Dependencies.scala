@@ -12,7 +12,10 @@ object Dependencies {
 
   val addRepo = Task("add elasticsearch repo", AptRepository(
     repo = "deb http://packages.elastic.co/elasticsearch/2.x/debian stable main",
-    state = Some(AptRepository.State.present),
+    state = Some(AptRepository.State.present)
+  ))
+
+  val aptUpdate = Task("run apt-get update", Apt(
     update_cache = Some(true)
   ))
 

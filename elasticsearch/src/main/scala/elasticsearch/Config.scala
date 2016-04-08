@@ -1,11 +1,14 @@
 package elasticsearch
 
 import com.typesafe.config.ConfigFactory
-import scala.concurrent.duration._
 import com.myjeeva.digitalocean.impl.DigitalOceanClient
 
 object Config {
   private val c = ConfigFactory.load
+
+  object VPN {
+    val interfaceName = c.getString("vpn.interface-name")
+  }
 
   object DigitaOcean {
     val token = c.getString("digitalocean.token")
