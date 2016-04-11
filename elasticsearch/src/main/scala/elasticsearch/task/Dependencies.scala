@@ -25,8 +25,6 @@ object Dependencies {
     force = Some(true)
   ))
 
-
-
   val all = Java8.all ++ List(
     addEsKey,
     addRepo,

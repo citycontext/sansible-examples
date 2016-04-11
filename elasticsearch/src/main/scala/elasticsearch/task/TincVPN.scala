@@ -3,8 +3,9 @@ package elasticsearch.task
 
 import better.files.{File => F}
 import ansible.Modules._
-import ansible.Options.{Sudo, Become}
 import ansible.{Inventory, Task}
+import ansible.std._
+import ansible.dsl._
 import elasticsearch.Templates
 import Templates.{Tinc => TPL}
 
@@ -63,7 +64,7 @@ class TincVPN(netName: String, masterHost: Host, vpnHosts: List[Host]) {
   private val genKeyPair = Task("Generate tinc key pair", Shell(
     free_form = s"tincd -n $netName -K",
     creates = Some(s"$etcPath/rsa_key.priv")
-  ), Task.Options(become = Some(Become("root", Sudo))))
+  )).becoming("root")
 
   private def fetchKeyPair(h: Host) =
     Task("fetch tinc keys", Fetch(

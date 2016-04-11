@@ -1,28 +1,25 @@
 package gitbucket.tasks
 
 import ansible.Modules._
-import ansible.Options.{Sudo, Become}
+import ansible.std._
+import ansible.dsl._
 import ansible.Task
-import gitbucket.Conf.appName
+import gitbucket.Conf.{appName, appUser}
 
 object App {
   val warUrl = "https://github.com/gitbucket/gitbucket/releases/download/3.12/gitbucket.war"
-  val warPath = s"/home/$appName/gitbucket.war"
+  val warPath = s"/home/$appUser/gitbucket.war"
   val logPath = s"/var/log/$appName.log"
 
-  def asAppUser(t: Task): Task =
-    t.copy(options = t.options.copy(
-      become = Some(Become(appName, Sudo))))
-
-  val downloadWar = Task("Download gitbucket war archive", GetUrl(
+  val downloadWar: Task = Task("Download gitbucket war archive", GetUrl(
     url = warUrl,
     dest = warPath
-  ))
+  )).becoming(appUser)
 
   val logFile = Task("Create log file", File(
     logPath,
     state = Some(File.State.touch),
-    owner = Some(appName)
+    owner = Some(appUser)
   ))
 
   val createUpstartTask = Task("create upstart task", Copy(
@@ -44,7 +41,7 @@ object App {
   ))
 
   val all = List(
-    asAppUser(downloadWar),
+    downloadWar,
     logFile,
     createUpstartTask,
     startApp)

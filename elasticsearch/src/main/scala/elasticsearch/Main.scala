@@ -6,7 +6,8 @@ import scala.util.{Success, Failure}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import ansible.Inventory.HostPattern
-import ansible.Options.Become
+import ansible.std._
+import ansible.dsl._
 import ansible.{Runner, Playbook}
 import Inventory.esGroupName
 
@@ -28,9 +29,8 @@ object Main extends App {
         vpnHosts.foreach { h =>
           run(Playbook(
             hosts = List(HostPattern(h.publicIp)),
-            tasks = vpn.configHost(h),
-            options = Playbook.Options(become = Some(Become()))
-          ))
+            tasks = vpn.configHost(h)
+          ).usingSudo)
         }
         run(Playbook(
           hosts = List(HostPattern(esGroupName)),
