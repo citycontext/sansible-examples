@@ -12,9 +12,8 @@ case class EsConfig(privateIps: Seq[String]) {
 
   val restartService = Task("restart elasticsearch service", Service(
     name = "elasticsearch",
-    state = Some(Service.State.restarted),
     enabled = Some(true)
-  ))
+  ).withState(Service.State.restarted))
 
   val all = List(updateConfig, restartService)
 }

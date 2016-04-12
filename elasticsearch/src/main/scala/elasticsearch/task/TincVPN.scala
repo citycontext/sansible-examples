@@ -1,10 +1,10 @@
 package elasticsearch.task
 
-
 import better.files.{File => F}
 import ansible.Modules._
-import ansible.Options.{Sudo, Become}
 import ansible.{Inventory, Task}
+import ansible.std._
+import ansible.dsl._
 import elasticsearch.Templates
 import Templates.{Tinc => TPL}
 
@@ -63,7 +63,7 @@ class TincVPN(netName: String, masterHost: Host, vpnHosts: List[Host]) {
   private val genKeyPair = Task("Generate tinc key pair", Shell(
     free_form = s"tincd -n $netName -K",
     creates = Some(s"$etcPath/rsa_key.priv")
-  ), Task.Options(become = Some(Become("root", Sudo))))
+  )).becoming("root")
 
   private def fetchKeyPair(h: Host) =
     Task("fetch tinc keys", Fetch(
@@ -90,14 +90,11 @@ class TincVPN(netName: String, masterHost: Host, vpnHosts: List[Host]) {
 
   private val enableNetwork = Task(s"adding $netName to /etc/tinc/nets.boot", Lineinfile(
     dest = "/etc/tinc/nets.boot",
-    line = Some(netName),
-    state = Some(Lineinfile.State.present)
-  ))
+    line = Some(netName)
+  ).withState(Lineinfile.State.present))
 
-  private val startService = Task("start tinc", Service(
-    name = "tinc",
-    state = Some(Service.State.started)
-  ))
+  private val startService =
+    Task("start tinc", Service(name = "tinc").withState(Service.State.started))
 
   def initLocalKeyDir(): Unit = {
     if (localKeyPath.exists) localKeyPath.delete()
@@ -123,5 +120,4 @@ class TincVPN(netName: String, masterHost: Host, vpnHosts: List[Host]) {
   ))))
 
   def start = List(enableNetwork, startService)
-
 }

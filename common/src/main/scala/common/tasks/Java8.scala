@@ -22,7 +22,7 @@ object Java8 {
 
   val installJava8 = Task(
     "Instal java8",
-    Apt(name = Some("oracle-java8-installer"), state = Some(Apt.State.present)))
+    Apt(name = Some("oracle-java8-installer")).withState(Apt.State.present))
 
   val updateAlternatives = Task(
     "update java alternatives",
